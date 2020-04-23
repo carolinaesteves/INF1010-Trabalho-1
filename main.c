@@ -2,12 +2,10 @@
 #include <stdio.h>
 
 
-int main(void){
-
-    char postfix[80] = ""; // o postfix
-    
-    //cria arvore de espressão
+int main(void){ 
     avrExp* a = arv_criavazia();
+    char postfix[80] = {'7','3','2','/','+','\0'}; // o postfix
+    
     
     //passa postfix para arvore de expressao
     a = pfx_arvexp(postfix,a);
