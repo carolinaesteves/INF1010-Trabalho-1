@@ -1,4 +1,3 @@
-
 struct avrExp{
     int tipo;
     int valor;

@@ -12,7 +12,7 @@ avrExp* arv_criaOperador(int tipo,char oper, avrExp* esq, avrExp* dir, avrExp* p
     avrExp* a = (avrExp*) malloc(sizeof(avrExp));
     if(a == NULL)
         exit(1);
-    
+
     a->tipo = 1;
     a->valor = -1;
     a->oper = oper;
