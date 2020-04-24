@@ -14,3 +14,4 @@ int pilha_tamanho(Pilha * p);
 void pilha_libera (Pilha* p);
 char pilha_topo(Pilha * p);
 void pilha_imprimir(Pilha * p);
+void converte_infix_para_postfix (char* str, char* postfix);
