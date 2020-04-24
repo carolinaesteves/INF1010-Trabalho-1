@@ -1,4 +1,4 @@
-// - Ana Carolina Esteves
+// 1512690 - Ana Carolina Esteves
 // 1512996 - Anna Carolina Fonseca Buarque de Verçosa
 
 #include <stdio.h>
