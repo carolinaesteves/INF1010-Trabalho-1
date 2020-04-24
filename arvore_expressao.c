@@ -14,7 +14,6 @@ avrExp* arv_criaOperador(int tipo,char oper, avrExp* esq, avrExp* dir, avrExp* p
         exit(1);
 
     a->tipo = 1;
-    a->valor = -1;
     a->oper = oper;
     a->esq = esq;
     a->dir = dir;
@@ -40,7 +39,7 @@ int arv_vazia(avrExp* a){
 }
 
 int calculaExpressao(avrExp* a){
-    if((a == NULL) ||((a->tipo != 0) && (a->tipo != 1 )))
+    if((a == NULL) || ((a->tipo != 0) && (a->tipo != 1 )))
         return 0;
     else if(a->tipo == 0) //verifica se é operando
         return a->valor;
@@ -75,10 +74,14 @@ avrExp* arv_libera(avrExp* a){
 
 void arv_imprime(avrExp* a){
     if(!arv_vazia(a)){
-        if(a->tipo == 1) //se for operador
+        if(a->tipo == 1){ //se for operador
             printf("(%c",a->oper);
-        else { //se não é operador então é um número
-            printf("%d",a->valor);
+            arv_imprime(a->esq);
+            arv_imprime(a->dir);
+            printf(")");
+        }
+        else{ //se não é operador então é um número
+            printf("(%d",a->valor);
             arv_imprime(a->esq);
             arv_imprime(a->dir);
             printf(")");
@@ -93,7 +96,6 @@ avrExp* pfx_arvexp(char* postfix, avrExp* a){
     avrExp* atual;
     avrExp* novo;
     t = strlen(postfix);
-    //printf("Tamanho da string %d", t);
 
     //verifica se esse elemento se é operador ou operando, cria um nó para ele e coloca na raíz;
     switch (postfix[t-1]) //pega o elemento do postfix mais a direita
@@ -111,13 +113,21 @@ avrExp* pfx_arvexp(char* postfix, avrExp* a){
         a = arv_criaOperador(1,'/',arv_criavazia(),arv_criavazia(),arv_criavazia());
         break;
     default:
-        a = arv_criaOperando(0,(int)postfix[t-1],arv_criavazia(),arv_criavazia(),arv_criavazia());
-        break;
+        if(postfix[t-1] != ' '){ //ignorar espaço
+                if(postfix[t-1-1] != ' '){  //verifica anterior
+                    int res = ((int)postfix[t-1-1]-48 )* 10;
+                    res += (int)postfix[t-1]-48;
+                    novo = arv_criaOperando(0,res,arv_criavazia(),arv_criavazia(),arv_criavazia());
+                }
+                else{
+                    novo = arv_criaOperando(0,(int)postfix[t-1]-48,arv_criavazia(),arv_criavazia(),arv_criavazia());
+                }
+            }
+            break;
     }
-
     atual = a;
 
-    for(int i=t-2;i>0;i--){ //para cada elemento da direita p/esquerda com exceção do útlimo
+    for(int i=t-2;i>=0;i--){ //para cada elemento da direita p/esquerda com exceção do último
         switch (postfix[i]){  //crie um nó
         case '+':
             novo = arv_criaOperador(1,'+',arv_criavazia(),arv_criavazia(),arv_criavazia());
@@ -132,21 +142,33 @@ avrExp* pfx_arvexp(char* postfix, avrExp* a){
             novo = arv_criaOperador(1,'/',arv_criavazia(),arv_criavazia(),arv_criavazia());
             break;
         default:
-            novo = arv_criaOperando(0,(int)postfix[t-1],arv_criavazia(),arv_criavazia(),arv_criavazia());
+            if(postfix[i] != ' '){ //ignorar espaço
+                if(postfix[i-1] != ' '){  //verifica anterior
+                    int res = ((int)postfix[i-1]-48 )* 10;
+                    res += (int)postfix[i]-48;
+                    novo = arv_criaOperando(0,res,arv_criavazia(),arv_criavazia(),arv_criavazia());
+                    i--;
+                }
+                else{
+                    novo = arv_criaOperando(0,(int)postfix[i]-48,arv_criavazia(),arv_criavazia(),arv_criavazia());
+                }
+            }
             break;
         }
-    
-        if(atual->esq != NULL && atual->dir != NULL){ //se o nó atual não puder ter mais filhos
-            //procura o primeiro pai/avô que pode ter mais filhos e defina- o como o atual
-            atual = busca_no(atual);
-        }
-        //anexe o novo nó ao nó atual
-        else if(atual->esq != NULL)  //se já tiver algo na esquerda
-                arv_conecta(atual,atual->esq, novo);//coloca na direita
-        else if(atual->dir != NULL) //se ja tiver algo na direita
-                arv_conecta(atual,novo, atual->dir); //coloca na esquerda
-        //defina o novo nó como o nó atual
-        atual = novo;        
+
+        if(postfix[i] != ' '){
+            if(atual->esq != NULL && atual->dir != NULL){ //se o nó atual não puder ter mais filhos
+                //procura o primeiro pai/avô que pode ter mais filhos e defina- o como o atual
+                atual = busca_no(atual);
+            }
+            //anexe o novo nó ao nó atual
+            else if(atual->esq != NULL)  //se já tiver algo na esquerda
+                    arv_conecta(atual,atual->esq, novo);//coloca na direita
+            else if(atual->dir != NULL) //se ja tiver algo na direita
+                    arv_conecta(atual,novo, atual->dir); //coloca na esquerda
+            //defina o novo nó como o nó atual
+            atual = novo;
+        }       
 
     }
 
