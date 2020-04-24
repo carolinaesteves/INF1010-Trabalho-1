@@ -115,7 +115,7 @@ avrExp* pfx_arvexp(char* postfix, avrExp* a){
     default:
         if(postfix[t-1] != ' '){ //ignorar espaço
                 if(postfix[t-1-1] != ' '){  //verifica anterior
-                    int res = ((int)postfix[t-1-1]-48 )* 10;
+                    int res = ((int)postfix[t-2]-48 )* 10;
                     res += (int)postfix[t-1]-48;
                     novo = arv_criaOperando(0,res,arv_criavazia(),arv_criavazia(),arv_criavazia());
                 }
@@ -127,66 +127,124 @@ avrExp* pfx_arvexp(char* postfix, avrExp* a){
     }
     atual = a;
 
-    for(int i=t-2;i>=0;i--){ //para cada elemento da direita p/esquerda com exceção do último
-        switch (postfix[i]){  //crie um nó
-        case '+':
-            novo = arv_criaOperador(1,'+',arv_criavazia(),arv_criavazia(),arv_criavazia());
-            break;
-        case '-':
-            novo = arv_criaOperador(1,'-',arv_criavazia(),arv_criavazia(),arv_criavazia());
-            break;
-        case '*':
-            novo = arv_criaOperador(1,'*',arv_criavazia(),arv_criavazia(),arv_criavazia());
-            break;
-        case '/':
-            novo = arv_criaOperador(1,'/',arv_criavazia(),arv_criavazia(),arv_criavazia());
-            break;
-        default:
-            if(postfix[i] != ' '){ //ignorar espaço
-                if(postfix[i-1] != ' '){  //verifica anterior
-                    int res = ((int)postfix[i-1]-48 )* 10;
-                    res += (int)postfix[i]-48;
-                    novo = arv_criaOperando(0,res,arv_criavazia(),arv_criavazia(),arv_criavazia());
-                    i--;
+    for(int i=t-2;i>=0;i--)
+    { //para cada elemento da direita p/esquerda com exceção do último
+        switch (postfix[i])
+        {  //crie um nó
+            case '+':
+                novo = arv_criaOperador(1,'+',arv_criavazia(),arv_criavazia(),arv_criavazia());
+                break;
+            case '-':
+                novo = arv_criaOperador(1,'-',arv_criavazia(),arv_criavazia(),arv_criavazia());
+                break;
+            case '*':
+                novo = arv_criaOperador(1,'*',arv_criavazia(),arv_criavazia(),arv_criavazia());
+                break;
+            case '/':
+                novo = arv_criaOperador(1,'/',arv_criavazia(),arv_criavazia(),arv_criavazia());
+                break;
+            default:
+                if(postfix[i] != ' ')
+                { //ignorar espaço
+                    if(postfix[i-1] != ' ' && i-1>=0)
+                    {  //verifica anterior
+                        int res = ((int)postfix[i-1]-48 )* 10;
+                        res += (int)postfix[i]-48;
+                        novo = arv_criaOperando(0,res,arv_criavazia(),arv_criavazia(),arv_criavazia());
+                        i--;
+                    }
+                    else{
+                        novo = arv_criaOperando(0,(int)postfix[i]-48,arv_criavazia(),arv_criavazia(),arv_criavazia());
+                    }
+                    
                 }
-                else{
-                    novo = arv_criaOperando(0,(int)postfix[i]-48,arv_criavazia(),arv_criavazia(),arv_criavazia());
-                }
-            }
-            break;
-        }
 
-        if(postfix[i] != ' '){
-            if(atual->esq != NULL && atual->dir != NULL){ //se o nó atual não puder ter mais filhos
-                //procura o primeiro pai/avô que pode ter mais filhos e defina- o como o atual
+                break;
+            }
+
+        if(postfix[i] != ' ')
+        {
+            // se o nó atual não tem filho a direita
+            if (atual->dir == NULL)
+            {
+                atual->dir = novo;
+                novo->pai = atual;
+            }
+            // se o nó atual não tem filho a esquerda
+            else if (atual->esq == NULL)
+            {
+                atual->esq = novo;
+                novo->pai = atual;
+            }
+            // se o nó atual já tem duas subarvores, procurar o nó disponivel
+            else
+            {
                 atual = busca_no(atual);
-            }
-            //anexe o novo nó ao nó atual
-            else if(atual->esq != NULL)  //se já tiver algo na esquerda
-                    arv_conecta(atual,atual->esq, novo);//coloca na direita
-            else if(atual->dir != NULL) //se ja tiver algo na direita
-                    arv_conecta(atual,novo, atual->dir); //coloca na esquerda
-            //defina o novo nó como o nó atual
+                if (atual->dir == NULL)
+                {
+                    atual->dir = novo;
+                    novo->pai = atual;
+                }
+                else if (atual->esq == NULL)
+                {
+                    atual->esq = novo;
+                    novo->pai = atual;
+                }
+            }   
+        // se o novo nó é um numero
+        if (novo->tipo == 0)
+            atual = novo->pai;
+        else
             atual = novo;
-        }       
-
     }
+}
+
+        // if (atual->pai != NULL)
+
+            // if(atual->esq != NULL && atual->dir != NULL){ //se o nó atual não puder ter mais filhos
+            //     //procura o primeiro pai/avô que pode ter mais filhos e defina- o como o atual
+            //     atual = busca_no(atual);
+            // }
+            // //anexe o novo nó ao nó atual
+            // // else if(atual->esq != NULL)  //se já tiver algo na esquerda
+            // //         arv_conecta(atual,atual->esq, novo);//coloca na direita
+            // // else if(atual->dir != NULL) //se ja tiver algo na direita
+            // //         arv_conecta(atual,novo, atual->dir); //coloca na esquerda
+            // else  //se já existir filho na esquerda
+            //     arv_conecta (atual, atual->dir, novo);
+            // //defina o novo nó como o nó atual
+
+            // se o novo nó é um numero voltar para o pai com operador
+            // if (novo->tipo == 0)
+            //     atual = novo->pai;
+            // else
+            //     atual = novo;
+      
+
+    
 
     return a;
         
 }
 
-void arv_conecta (avrExp* pai, avrExp* sae, avrExp* sad)
+void arv_conecta (avrExp* pai, avrExp* subarv, avrExp* novo)
 {
-    if(sae != NULL)
-        sae->pai = pai;
-
-    if(sad != NULL)
-        sad->pai = pai;
-    
-    pai->esq = sae;
-    pai->dir = sad;
+    novo->pai = pai;
+    pai->dir = novo;
+    printf("%d\n", novo->valor);
 }
+
+// void arv_conecta (avrExp* pai, avrExp* sae, avrExp* sad)
+// {
+//     if(sae != NULL)
+//         sae->pai = pai;
+
+//     if(sad != NULL)
+//         sad->pai = pai;
+    
+//     pai->esq = sae;
+//     pai->dir = sad;
+// }
 
 avrExp* busca_no(avrExp* a){
     avrExp* aux = a;
